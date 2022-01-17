@@ -4,17 +4,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-Future<Album> fetchAlbum() async {
-  final response = await http
-      .get(Uri.parse('https://www.clickpost.in/api/v2/tracking/awb-register/'));
+Future<List<dynamic>> fetchAlbum() async {
+  final response = await http.get(Uri.parse(
+      'https://www.clickpost.in/api/v2/tracking/awb-register/?format=json'));
 
   if (response.statusCode == 200) {
-    // If the server did return a 200 OK response,
-    // then parse the JSON.
-    return Album.fromJson(jsonDecode(response.body));
+    return jsonDecode(response.body);
   } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
     throw Exception('Failed to load album');
   }
 }
@@ -46,7 +42,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late Future<Album> futureAlbum;
+  late Future<List<dynamic>> futureAlbum;
 
   @override
   void initState() {
@@ -66,11 +62,21 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Fetch Data Example'),
         ),
         body: Center(
-          child: FutureBuilder<Album>(
+          child: FutureBuilder<List<dynamic>>(
             future: futureAlbum,
-            builder: (context, snapshot) {
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
-                return Text("Has Data");
+                return ListView.builder(
+                    itemCount: 3,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Card(
+                        child: Column(
+                          children: <Widget>[
+                            ListTile(leading: Text(snapshot.data[0]))
+                          ],
+                        ),
+                      );
+                    });
               } else if (snapshot.hasError) {
                 return Text('${snapshot.error}');
               }
